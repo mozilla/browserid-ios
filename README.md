@@ -96,3 +96,76 @@ def verify():
 
 ### In a native application that wraps a UIWebView
 
+This is for the case where you are working on a web application that is presented in a `UIWebView` in a native iOS application.
+
+Unfortunately it is not possible to directly use BrowserID from a `UIWebView` because the `UIWebView` has some limitation like for example not being able to deal with popups or inter-webview communication.
+
+Fortunately it is not very difficult to use the `BrowserIDViewController` from a `UIWebView`. What we need to do is bridge the `UIWebView` with native code so that we can present the `BrowserIDViewController` from the native side of the app.
+
+Here is a `UIWebView` delegate method that intercepts a custom `browserid-origin://getVerifiedEmail` URL which will then start the BrowserID process.
+
+```
+- (BOOL) webViewShouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
+{
+    NSURL* url = [request URL];
+    if ([[url scheme] isEqualToString: @"browserid-origin"])
+    {
+        if ([[url host] isEqualToString: @"getVerifiedEmail"])
+        {
+            [self startBrowserIDWithOrigin: [[url query] substringFromIndex: [@"data=" length]]];
+            return NO;
+        }
+    }
+    return YES;
+}
+```
+
+You will need to implement your own BrowserID 'shim':
+
+```
+<script type="text/javascript">
+    navigator.id = {};
+
+    navigator.id._callbackToCocoa = function(name, value) {
+        window.location = "browserid-origin://" + name + "/callback?data=" + value;
+    };
+
+    navigator.id.getVerifiedEmail = function(callback) {
+        navigator.id.callback = callback;
+        navigator.id._callbackToCocoa("getVerifiedEmail", document.location.origin);
+    };
+  </script>
+```
+
+Then you can call BrowserID in the usual way:
+
+```
+// Click handler for the BrowserID Login button
+$(".browserid-login").click(function(e){
+    navigator.id.getVerifiedEmail(function(assertion) {
+		if (assertion) {
+			// Call our verifier to make sure this is a valid login
+			$.ajax({
+                type: "POST",
+				url: "/verify",
+				data: assertion,
+				dataType: "text",
+				success: function(data, status, xhr) {
+                    // We assume our /verify method returns JSON like { success: true, email: "you@domain" }
+					if (data.success) {
+						// The verification passed and the user is logged in.
+                        alert("Welcome, " + data.email);
+					} else {
+						// The verification failed
+					}
+				},
+				error: function(xhr, status, error) {
+					// Error while verifying
+				}
+			});
+		}
+	});
+});
+```
+
+If your application allows it you can simply redirect away from the login page. You can also call back to the native side to inform it that the BrowserID login and verification were successfull.
