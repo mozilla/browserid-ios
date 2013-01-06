@@ -14,6 +14,7 @@ static NSString* const kBrowserIDSignInURL = @"https://login.persona.org/sign_in
 @synthesize delegate = _delegate;
 @synthesize origin = _origin;
 @synthesize verifier = _verifier;
+@synthesize emailAddress = _emailAddress;
 
 - (void) viewDidLoad
 {
@@ -117,17 +118,30 @@ static NSString* const kBrowserIDSignInURL = @"https://login.persona.org/sign_in
 	
 	if ([[[url scheme] lowercaseString] isEqualToString: @"browseridviewcontroller"])
 	{	
-		if ([[url host] isEqualToString: @"assertionReady"]) {
-            NSString* assertion = [[url query] substringFromIndex: [@"data=" length]];
+        NSString* message = url.host;
+        NSString* param = [[url query] substringFromIndex: [@"data=" length]];
+        NSLog(@"MESSAGE '%@', param '%@'", message, param);
+		if ([message isEqualToString: @"assertionReady"]) {
+            NSRange separator = [param rangeOfString: @"&email="];
+            if (separator.length > 0) {
+                NSString* email = [param substringFromIndex: NSMaxRange(separator)];
+                param = [param substringToIndex: separator.location];
+                self.emailAddress = [email stringByReplacingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
+            }
+            param = [param stringByReplacingPercentEscapesUsingEncoding: NSUTF8StringEncoding];
             if (_verifier) {
-                [self verifyAssertion: assertion];
+                [self verifyAssertion: param];
             } else {
-                [_delegate browserIDViewController: self didSucceedWithAssertion: assertion];
+                [_delegate browserIDViewController: self didSucceedWithAssertion: param];
             }
             }
 
-		else if ([[url host] isEqualToString: @"assertionFailure"]) {
-			[_delegate browserIDViewController: self didFailWithReason: [[url query] substringFromIndex: [@"data=" length]]];
+		else if ([message isEqualToString: @"assertionFailure"]) {
+			[_delegate browserIDViewController: self didFailWithReason: param];
+            }
+
+		else if ([message isEqualToString: @"gotEmail"]) {
+			self.emailAddress = param;
 		}
 	
 		return NO;

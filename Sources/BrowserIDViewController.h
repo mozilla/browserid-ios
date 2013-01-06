@@ -22,4 +22,7 @@
 @property (nonatomic,strong) NSString* origin;
 @property (nonatomic,strong) NSURL* verifier;
 
+/** After a successful login, this property will be set to the email address the user entered. */
+@property (nonatomic,strong) NSString* emailAddress;
+
 @end
