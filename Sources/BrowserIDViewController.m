@@ -6,7 +6,7 @@
 #define __has_feature(x) 0
 #endif
 
-static NSString* kBrowserIDSignInURL = @"https://www.browserid.org/sign_in";
+static NSString* const kBrowserIDSignInURL = @"https://login.persona.org/sign_in#NATIVE";
 
 @implementation BrowserIDViewController
 
@@ -124,8 +124,8 @@ static NSString* kBrowserIDSignInURL = @"https://www.browserid.org/sign_in";
             } else {
                 [_delegate browserIDViewController: self didSucceedWithAssertion: assertion];
             }
-		}
-		
+            }
+
 		else if ([[url host] isEqualToString: @"assertionFailure"]) {
 			[_delegate browserIDViewController: self didFailWithReason: [[url query] substringFromIndex: [@"data=" length]]];
 		}
