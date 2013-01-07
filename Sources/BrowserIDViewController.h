@@ -43,12 +43,12 @@
 @property (nonatomic,weak) id<BrowserIDViewControllerDelegate> delegate;
 
 /** The URL of the site the user is logging into (i.e. the site you will send the assertion to).
-	Required. */
+    Required. */
 @property (nonatomic,strong) NSURL* origin;
 
 /** An optional URL of a verification service provided by your applicatin's server-side counterpart.
-	If this property is set, an assertion will be sent to this URL as the body of a POST request,
-	and the response relayed to the delegate via its verification-related methods. */
+    If this property is set, an assertion will be sent to this URL as the body of a POST request,
+    and the response relayed to the delegate via its verification-related methods. */
 @property (nonatomic,strong) NSURL* verifier;
 
 /** After a successful login, this property will be set to the email address the user entered. */
