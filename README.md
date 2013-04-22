@@ -1,3 +1,11 @@
+# THIS REPOSITORY IS DEPRECATED!
+
+Development has moved to the [mozilla/persona-ios](https://github.com/mozilla/persona-ios) repository instead.
+
+---
+
+# OLD INFORMATION BELOW:
+
 >_Please note that this code/project is work in progress. It currently works good enough for accounts that just go through persona.org but it has problems when alternative Identity Providers are in play._
 >_At this point it is not recommended to use this code, except to get an idea of what BrowserID will look like._
 
